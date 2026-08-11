@@ -7,9 +7,9 @@
     
     Latest: 7.3
     Stable: 7.2
-    
+  </p>
+  <p>
     ## 2. How to use
-
     
   </p>
 </body>
