@@ -36,7 +36,7 @@ include(joinpath(@__DIR__, "Necessities", "gui_function_temp.jl"))
 include(joinpath(@__DIR__, "Necessities", "GUItype.jl"))
 include(joinpath(@__DIR__, "Necessities", "GDK_KEYmap.jl"))
 include(joinpath(@__DIR__, "Necessities", "wavesurfer.jl"))
-#include(raw"Necessities\JPEGsaver_function_temp.jl")
+#include(joinpath(@__DIR__, "Necessities", "JPEGsaver_function_temp.jl"))
 
 function gui_idle(tag::AbstractString, f::Function)
     idle_add_compat() do
