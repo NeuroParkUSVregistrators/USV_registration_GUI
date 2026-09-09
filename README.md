@@ -33,6 +33,7 @@ Displayed acoustic features include:
 ```text
 USV_registration_GUI/
 │
+├── temp8.jl
 ├── temp7.3.jl
 ├── usv.glade
 │
