@@ -45,10 +45,12 @@ USV_registration_GUI/
     ├── gui_function_temp.jl
     ├── GDK_KEYmap.jl
     ├── wavesurfer.jl
+    ├── usv_detection_corefunctions.jl
     └── JPEGsaver_function_temp.jl
 ```
 
-`temp7.3.jl` is the main GUI script.
+`temp7.3.jl` is the main stable GUI script.
+`temp9.jl` is the latest GUI script.
 
 ---
 
