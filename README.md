@@ -77,6 +77,8 @@ ImageTransformations
 ImageMagick
 FileIO
 Interpolations
+SparseArrays
+Statistics
 ```
 
 The current implementation is primarily developed and tested on Windows.
