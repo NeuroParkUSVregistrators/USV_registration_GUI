@@ -113,6 +113,10 @@ Run:
 ```julia
 include("temp7.3.jl")
 ```
+or
+```julia
+include("temp8.jl")
+```
 
 The GUI will open a file-selection dialog.
 
