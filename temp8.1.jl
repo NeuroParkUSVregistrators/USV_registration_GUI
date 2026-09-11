@@ -25,13 +25,13 @@ timeout_add_compat(f::Function, ms::Integer) = g_timeout_add(f, ms)
 timeout_add_compat(ms::Integer, f::Function) = g_timeout_add(f, ms)
 
 # h5 file 
-include("C:\\Users\\neuropark\\Desktop\\Julia\\USV-JJICK\\wavesurfer.jl")
-include("C:\\Users\\neuropark\\Desktop\\Julia\\USV-JJICK\\acoustic.jl")
-include("C:\\Users\\neuropark\\Desktop\\Julia\\USVMANUAL\\gui_function_temp.jl")
-include("C:\\Users\\neuropark\\Desktop\\Julia\\USVMANUAL\\GUItype.jl")
-include(raw"C:\Users\neuropark\Desktop\Julia\usvmanual\GDK_KEYmap.jl")
-include(raw"C:\Users\neuropark\Desktop\Julia\usvmanual\JPEGsaver_function_temp.jl")
-include(raw"usv_detection_corefunctions_temp.jl")
+include(joinpath(@__DIR__, "Necessities", "acoustic.jl"))
+include(joinpath(@__DIR__, "Necessities", "gui_function_temp.jl"))
+include(joinpath(@__DIR__, "Necessities", "GUItype.jl"))
+include(joinpath(@__DIR__, "Necessities", "GDK_KEYmap.jl"))
+include(joinpath(@__DIR__, "Necessities", "wavesurfer.jl"))
+include(raw"Necessities\JPEGsaver_function_temp.jl")
+include(raw"Necessities\usv_detection_corefunctions_temp.jl")
 
 function gui_idle(tag::AbstractString, f::Function)
     idle_add_compat() do
