@@ -1,100 +1,56 @@
-# USV Registration GUI
+# USV Registration GUI — Temp8.1.2 Laptop
 
-A Julia-based graphical interface for **manual registration and inspection of mouse ultrasonic vocalizations (USVs)** from WaveSurfer `.h5` recordings.
+A laptop-optimized version of the Julia-based GUI for **manual and automatic registration of mouse ultrasonic vocalizations (USVs)** from WaveSurfer `.h5` recordings.
 
-The GUI provides interactive spectrogram inspection, manual USV bounding-box annotation, acoustic feature visualization, annotation saving, and automatic spectrogram-image export.
-
-## Features
-
-* Load WaveSurfer `.h5` recordings
-* Display USV spectrograms
-* Manually draw USV bounding boxes
-* Move and resize existing annotations
-* Delete selected annotations
-* Save annotations as `.jld`
-* Reopen and edit existing `.jld` annotations
-* Automatically export individual USVs as JPEG images
-* Display the current file and unsaved-change status
-* Navigate recordings using keyboard and mouse controls
-* Calculate acoustic features for individual and population-level USVs
-
-Displayed acoustic features include:
-
-* Duration
-* Loudness
-* Spectral purity
-* Mean frequency
-* Pitch variance
+`temp8.1.2_laptop.jl` retains the automatic USV detection and manual correction workflow of Temp8.1, while reorganizing the GUI for use on **smaller laptop displays**.
 
 ---
 
-## Repository Structure
+## What is different from Temp8.1?
+
+Temp8.1.2 Laptop primarily changes the **GUI layout and interaction**, rather than the USV detection workflow itself.
+
+| Feature                            | Temp8.1 | Temp8.1.2 Laptop    |
+| ---------------------------------- | ------- | ------------------- |
+| Automatic USV detection            | ✓       | ✓                   |
+| Manual box correction              | ✓       | ✓                   |
+| `.jld` annotation saving           | ✓       | ✓                   |
+| Automatic JPEG export              | ✓       | ✓                   |
+| Standard GUI layout                | ✓       | —                   |
+| Laptop-optimized layout            | —       | ✓                   |
+| Responsive spectrogram canvas      | —       | ✓                   |
+| Compact acoustic-feature plots     | —       | ✓                   |
+| Spectrogram frequency-axis overlay | —       | ✓                   |
+| Air-flow panel                     | ✓       | Removed             |
+| Dedicated laptop `.glade` layout   | —       | `usv_vlaptop.glade` |
+
+The laptop version therefore uses the same basic workflow:
 
 ```text
-USV_registration_GUI/
-│
-├── temp8.jl
-├── temp7.3.jl
-├── usv.glade
-│
-├── Project.toml
-├── Manifest.toml
-│
-└── Necessities/
-    ├── acoustic.jl
-    ├── GUItype.jl
-    ├── gui_function_temp.jl
-    ├── GDK_KEYmap.jl
-    ├── wavesurfer.jl
-    ├── usv_detection_corefunctions.jl
-    └── JPEGsaver_function_temp.jl
+Load recording
+      ↓
+Automatic detection
+      ↓
+Manual inspection / correction
+      ↓
+Save annotations
 ```
 
-`temp7.3.jl` is the main stable GUI script.
-`temp9.jl` is the latest GUI script.
+but presents the information in a more compact interface.
 
 ---
 
-## Requirements
-
-The GUI is written in Julia and currently uses packages including:
-
-```text
-Gtk
-GtkObservables
-Graphics
-Colors
-Cairo
-CairoMakie
-JLD
-HDF5
-FFTW
-DSP
-LinearAlgebra
-Distributions
-Images
-ImageTransformations
-ImageMagick
-FileIO
-Interpolations
-SparseArrays
-Statistics
-```
-
-The current implementation is primarily developed and tested on Windows.
-
----
-
-## Installation
+# Installation
 
 Clone the repository:
 
 ```bash
 git clone https://github.com/NeuroParkUSVregistrators/USV_registration_GUI.git
 cd USV_registration_GUI
+git checkout Laptop_ver
 ```
 
-Start Julia from the repository directory and activate the environment:
+Start Julia from the repository directory:
 
 ```julia
 using Pkg
@@ -102,23 +58,19 @@ Pkg.activate(".")
 Pkg.instantiate()
 ```
 
-If a `Manifest.toml` is provided, `Pkg.instantiate()` will install the package versions used by the project.
+The script loads its supporting functions from the `Necessities/` directory automatically.
 
 ---
 
-## Running the GUI
+# Running Temp8.1.2 Laptop
 
 Run:
 
 ```julia
-include("temp7.3.jl")
-```
-or
-```julia
-include("temp8.jl")
+include("temp8.1.2_laptop.jl")
 ```
 
-The GUI will open a file-selection dialog.
+A file-selection dialog will appear.
 
 Select either:
 
@@ -126,200 +78,352 @@ Select either:
 recording.h5
 ```
 
-for a new registration, or
+to start a new registration, or:
 
 ```text
 recording.jld
 ```
 
-to reopen a previously annotated recording.
+to reopen an existing annotation.
 
-The corresponding `.h5` recording must be available when loading a `.jld` annotation.
+When loading a `.jld` file, the corresponding recording data must also be available.
 
 ---
 
-## Basic Workflow
+# Basic Usage
+
+## 1. Load a recording
+
+Select a WaveSurfer `.h5` recording.
+
+The recording is converted into a spectrogram and displayed in the main panel.
+
+The current filename is shown in the window title.
+
+If the annotation has been modified but not saved, an asterisk is added:
 
 ```text
-WaveSurfer recording (.h5)
-          │
-          ▼
-     Load in GUI
-          │
-          ▼
- Inspect spectrogram
-          │
-          ▼
- Draw / edit USV boxes
-          │
-          ▼
-        Save
-       /    \
-      ▼      ▼
-   .jld     JPEGs
+recording.h5 *
 ```
 
-### 1. Load recording
+---
 
-Open a WaveSurfer `.h5` file.
+## 2. Navigate through the recording
 
-The GUI calculates the spectrogram and displays the recording.
+The visible time range can be controlled using the sliders or mouse wheel.
 
-### 2. Register USVs
+Keyboard controls are also available:
 
-Draw bounding boxes around individual vocalizations.
+| Input       | Action                          |
+| ----------- | ------------------------------- |
+| `←`         | Move backward through recording |
+| `→`         | Move forward through recording  |
+| Mouse wheel | Change displayed time scale     |
+| `↑`         | Select next USV                 |
+| `↓`         | Select previous USV             |
+| `Ctrl + S`  | Save                            |
+| `Ctrl + Z`  | Delete selected USV             |
+| `Delete`    | Delete selected USV             |
+| `Backspace` | Delete selected USV             |
 
-### 3. Inspect annotations
+The laptop version handles these shortcuts at the main-window level so that interacting with sliders or other GUI elements does not unnecessarily capture keyboard focus.
 
-The selected USV is shown separately together with its acoustic features.
+---
 
-### 4. Save
+# Automatic USV Detection
 
-Use the **Save** button or:
+Press the **Detection** button to automatically identify candidate USVs.
+
+The detection workflow is:
+
+```text
+Original spectrogram
+        ↓
+      Denoise
+        ↓
+Temporal USV detection
+   (onset / offset)
+        ↓
+Frequency-band detection
+        ↓
+2D bounding boxes
+        ↓
+Displayed in GUI
+```
+
+The detector first creates a copy of the spectrogram so that preprocessing does not modify the spectrogram displayed by the GUI.
+
+Temporal boundaries are detected first, followed by estimation of the frequency range of each detected syllable.
+
+The resulting detections are converted into the same bounding-box format used for manual annotations.
+
+### Important
+
+Running automatic detection **replaces the currently loaded annotation boxes** with the newly detected boxes.
+
+Therefore, the recommended workflow is:
+
+```text
+Load
+  ↓
+Run Detection
+  ↓
+Manually inspect detections
+  ↓
+Add / delete / resize boxes
+  ↓
+Save
+```
+
+If substantial manual annotation has already been performed, save it before running Detection.
+
+---
+
+# Manual Correction
+
+Automatic detection is intended to provide an initial set of candidate USVs.
+
+After detection, the boxes can be manually inspected and corrected using the normal annotation tools.
+
+You can:
+
+* add missed USVs,
+* delete false-positive detections,
+* move existing boxes,
+* resize time boundaries,
+* resize frequency boundaries.
+
+Automatic and manually created boxes use the same annotation representation.
+
+---
+
+# Laptop-Optimized Interface
+
+Temp8.1.2 Laptop introduces several layout changes specifically intended for smaller displays.
+
+## Responsive spectrogram
+
+The main spectrogram canvas expands according to the available window space rather than requiring a fixed vertical size.
+
+The time controls also resize horizontally with the window.
+
+## Compact single-USV display
+
+The selected-USV preview uses a compact fixed-height display:
+
+```text
+height ≈ 120 px
+```
+
+This reduces the amount of vertical space occupied by the preview while retaining access to individual-USV information.
+
+## Frequency axis
+
+The main spectrogram includes a frequency-axis overlay in:
+
+```text
+kHz
+```
+
+This allows the approximate frequency range of vocalizations and annotation boxes to be read directly from the spectrogram.
+
+## Compact acoustic-feature plots
+
+Instead of placing all acoustic-feature histograms in one horizontal row, the laptop version uses a compact arrangement:
+
+```text
+┌──────────┬──────────┬──────────┐
+│ Duration │ Loudness │  Purity  │
+├──────────┼──────────┼──────────┤
+│ Mean Freq│Pitch Var.│          │
+└──────────┴──────────┴──────────┘
+```
+
+This prevents axis labels and tick labels from overlapping when the GUI is displayed on a narrower screen.
+
+## Air-flow panel removed
+
+The separate air-flow panel used by earlier layouts has been removed.
+
+The available upper display area is instead allocated to the spectrogram, making the vocalization display larger on laptop screens.
+
+---
+
+# Inspecting Individual USVs
+
+Use:
+
+```text
+↑ / ↓
+```
+
+or the USV index controls to select individual annotations.
+
+The GUI displays:
+
+* Current USV / total USV count
+* Individual spectrogram
+* Duration
+* Loudness
+* Spectral purity
+* Mean frequency
+* Pitch variance
+
+The population distributions of these measurements are displayed in the compact histogram panel.
+
+---
+
+# Saving
+
+Press the **Save** button or:
 
 ```text
 Ctrl + S
 ```
 
-The annotation is saved as:
+The current annotation is saved as:
 
 ```text
 recording.jld
 ```
 
-and individual USV images are exported automatically.
-
----
-
-## Controls
-
-| Control            | Action                          |
-| ------------------ | ------------------------------- |
-| Left mouse drag    | Draw new USV                    |
-| Modified left drag | Move selected USV               |
-| Right mouse drag   | Resize selected USV             |
-| Mouse wheel        | Zoom time scale                 |
-| `←`                | Move backward through recording |
-| `→`                | Move forward through recording  |
-| `↑`                | Select next USV                 |
-| `↓`                | Select previous USV             |
-| `Ctrl + S`         | Save                            |
-| `Ctrl + Z`         | Delete selected USV             |
-| `Delete`           | Delete selected USV             |
-| `Backspace`        | Delete selected USV             |
-
----
-
-## File Status Indicator
-
-The title bar shows the currently loaded filename.
-
 For example:
 
 ```text
-USV260801_001.h5
+USV260901_001.h5
+        ↓
+USV260901_001.jld
 ```
 
-When annotations have been changed since the last save:
+The bounding-box annotations are stored under:
 
-```text
-USV260801_001.h5 *
+```julia
+"liness"
 ```
 
-The `*` indicates unsaved changes.
-
-After saving, the `*` disappears.
+Saving also clears the unsaved-change `*` indicator from the window title.
 
 ---
 
-## Annotation Files
+# JPEG Export
 
-Annotations are stored in JLD format.
+Individual USV spectrogram images are automatically exported after saving.
 
-Example:
+For:
 
 ```text
-USV260801_001.jld
+USV260901_001.jld
 ```
 
-The annotation file stores USV bounding-box coordinates separately from Gtk-specific GUI objects, allowing annotations to be loaded again in later sessions.
-
-The `.jld` filename corresponds to the original `.h5` recording:
+the default output directory is:
 
 ```text
-USV260801_001.h5
-USV260801_001.jld
+USV260901_001_jpegs/
+```
+
+The default exported image size is:
+
+```text
+128 × 128 px
+```
+
+The current exporter uses the low-cut USV spectrogram export workflow with quantile-based contrast adjustment.
+
+These images can subsequently be used for image-based analyses such as clustering, dimensionality reduction, or neural-network models.
+
+---
+
+# Recommended Workflow
+
+For a new recording:
+
+```text
+1. Open .h5
+       ↓
+2. Adjust spectrogram view
+       ↓
+3. Run Detection
+       ↓
+4. Inspect detected boxes
+       ↓
+5. Delete false positives
+       ↓
+6. Add missed USVs
+       ↓
+7. Adjust box boundaries
+       ↓
+8. Save
+       ↓
+ ┌─────┴─────┐
+ ▼           ▼
+.jld       JPEGs
+```
+
+For an existing annotation:
+
+```text
+Open .jld
+    ↓
+Inspect / edit boxes
+    ↓
+Save
 ```
 
 ---
 
-## JPEG Export
+# Temp8.1.2 Laptop at a Glance
 
-Saving also exports individual USV spectrograms.
+**Temp8.1.2 Laptop = Temp8.1 detection workflow + laptop-oriented GUI**
 
-Default output directory:
+The main changes are:
 
-```text
-USV260801_001_jpegs/
-```
+* dedicated `usv_vlaptop.glade` interface,
+* responsive spectrogram and GUI controls,
+* reduced vertical space usage,
+* compact single-USV preview,
+* acoustic histograms reorganized into two rows,
+* removal of the air-flow panel,
+* direct frequency-axis display in kHz,
+* improved global keyboard-focus handling.
 
-Default image size:
-
-```text
-128 × 128
-```
-
-The exported dataset can subsequently be used for image-based analyses such as dimensionality reduction, clustering, or neural-network models.
+The automatic detection, manual correction, `.jld` annotation, and JPEG-export workflow are retained.
 
 ---
 
-## Acoustic Measurements
+# Notes
 
-For each manually registered USV, the GUI calculates:
+Automatic detection should be treated as an **annotation-assistance tool**, not as a substitute for manual inspection.
 
-| Measurement     | Description                                      |
-| --------------- | ------------------------------------------------ |
-| Duration        | Vocalization duration in ms                      |
-| Loudness        | Mean signal power expressed in dB                |
-| Spectral purity | Ratio describing concentration of spectral power |
-| Mean frequency  | Mean dominant frequency in kHz                   |
-| Pitch variance  | Variance of dominant frequency in log₁₀(Hz²)     |
+Detection performance can depend on recording conditions, background noise, microphone configuration, vocalization amplitude, and USV morphology.
 
-Distributions of these measurements are displayed as histograms in the GUI.
+For final datasets, visually inspect the automatically generated bounding boxes before saving and downstream analysis.
 
 ---
 
 ## Current Version
 
-### Temp7.3
+**Temp8.1.2 Laptop**
 
-Major changes:
+Main script:
 
-* Added current filename to window title
-* Added unsaved-change (`*`) indicator
-* Improved file switching and GUI reset behavior
-* Reorganized GUI state handling
-* Changed dependencies to repository-relative paths
-* Updated automatic JPEG export
+```text
+temp8.1.2_laptop.jl
+```
 
-See `Temp7.3_ReleaseNote` for details.
+GUI definition:
 
----
+```text
+usv_vlaptop.glade
+```
 
-## Notes
+Automatic detection functions:
 
-The GUI currently assumes WaveSurfer-style HDF5 recordings and the acquisition structure expected by `wavesurfer.jl`.
+```text
+Necessities/usv_detection_corefunctions_temp.jl
+```
 
-Recording format, sampling rate, and channel configuration should therefore be checked before applying the GUI to data acquired with a different setup.
+Other supporting functions are located in:
 
----
-
-## Authors / Contributors
-
-NeuroPark USV Registrators
-
----
-
-## Repository
-
-https://github.com/NeuroParkUSVregistrators/USV_registration_GUI
+```text
+Necessities/
+```
