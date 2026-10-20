@@ -1,4 +1,4 @@
-include("C:\\Users\\neuropark\\Desktop\\Julia\\USVMANUAL\\GUItype.jl")
+include("GUItype_temp2.jl")
 
 # =====================================================================
 # gui_function_temp.jl
