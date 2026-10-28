@@ -1303,6 +1303,6 @@ function channel_select()
     return choice
 end
 
-choice = 2
+choice = 1
 # channel_select() 
 @time make_gui()

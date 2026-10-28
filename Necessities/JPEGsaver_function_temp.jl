@@ -23,8 +23,8 @@ using Interpolations
 
 include("wavesurfer.jl")
 include("acoustic.jl")
-include("gui_function_temp.jl")
-include("GUItype.jl")
+include("gui_function_temp2.jl")
+include("GUItype_temp2.jl")
 include("Stretcher.jl")
 
 function sequence_check_any!(ut)
