@@ -1,4 +1,5 @@
 # USV Registration GUI
+NEWLY NAMED: "JWI-EAK"
 
 A Julia/Gtk graphical interface for **registering and inspecting mouse ultrasonic vocalizations (USVs)** in WaveSurfer `.h5` recordings.
 
@@ -261,7 +262,7 @@ For each box the GUI shows:
 
 The bottom panel shows the distribution of each measurement over all boxes in the file.
 
-In temp9, purity, mean frequency and pitch variance are computed on the **fundamental band** of a box when it contains harmonics, so harmonics do not skew them. To use the whole box as in earlier versions:
+In temp9(Jwi-eak), purity, mean frequency and pitch variance are computed on the **fundamental band** of a box when it contains harmonics, so harmonics do not skew them. To use the whole box as in earlier versions:
 
 ```julia
 FEATURE_BAND[] = :box    # default :fundamental
