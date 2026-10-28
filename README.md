@@ -1,100 +1,76 @@
 # USV Registration GUI
 
-A Julia-based graphical interface for **manual registration and inspection of mouse ultrasonic vocalizations (USVs)** from WaveSurfer `.h5` recordings.
+A Julia/Gtk graphical interface for **registering and inspecting mouse ultrasonic vocalizations (USVs)** in WaveSurfer `.h5` recordings.
 
-The GUI provides interactive spectrogram inspection, manual USV bounding-box annotation, acoustic feature visualization, annotation saving, and automatic spectrogram-image export.
+`temp9.jl` is the current version of the GUI. On top of manual box annotation, it adds a one-click **automatic USV detection** pipeline (SDTS denoising → time-axis detection → ridge/harmonic frequency bounds) whose results load straight into the editor for review and correction.
 
 ## Features
 
-* Load WaveSurfer `.h5` recordings
-* Display USV spectrograms
-* Manually draw USV bounding boxes
-* Move and resize existing annotations
-* Delete selected annotations
-* Save annotations as `.jld`
-* Reopen and edit existing `.jld` annotations
-* Automatically export individual USVs as JPEG images
-* Display the current file and unsaved-change status
-* Navigate recordings using keyboard and mouse controls
-* Calculate acoustic features for individual and population-level USVs
-
-Displayed acoustic features include:
-
-* Duration
-* Loudness
-* Spectral purity
-* Mean frequency
-* Pitch variance
+* Load WaveSurfer `.h5` recordings (or reopen a saved `.jld` annotation)
+* Interactive spectrogram with a kHz frequency axis
+* **Automatic USV detection** with the **USV detection** button (new in temp9)
+* Manually draw, move, resize and delete USV bounding boxes
+* Per-USV close-up view with acoustic features
+* Population histograms of acoustic features
+* Save annotations as `.jld` and automatically export each USV as a 128 × 128 JPEG
+* Window title shows the current file and an unsaved-changes marker (`*`)
+* Keyboard and mouse-wheel navigation
 
 ---
 
 ## Repository Structure
 
+> `temp9.jl` lives on the **`temp9`** branch.
+
 ```text
 USV_registration_GUI/
 │
-├── temp8.jl
-├── temp7.3.jl
-├── usv.glade
+├── temp9.jl                         ← current GUI (this README)
+├── temp8.jl, temp7.3.jl, temp7.2.jl ← earlier versions
+├── usv.glade                        ← Gtk layout (window, buttons, panels)
+├── Project.toml / Manifest.toml     ← Julia environment
 │
-├── Project.toml
-├── Manifest.toml
+├── Necessities/
+│   ├── wavesurfer.jl                ← WaveSurfer / NI-DAQ .h5 loader
+│   ├── acoustic.jl                  ← STFT parameters and spectrogram (spec_data)
+│   ├── gui_function_temp2.jl        ← file loading, coordinate conversion, features
+│   ├── GUItype_temp2.jl             ← USVBox type for saving annotations
+│   ├── GDK_KEYmap.jl                ← key constants
+│   ├── JPEGsaver_function_temp.jl   ← per-USV JPEG export
+│   ├── usv_detection_3.jl           ← automatic detection pipeline
+│   └── sdts_filter.jl               ← SDTS transient-suppression filter
 │
-└── Necessities/
-    ├── acoustic.jl
-    ├── GUItype.jl
-    ├── gui_function_temp.jl
-    ├── GDK_KEYmap.jl
-    ├── wavesurfer.jl
-    ├── usv_detection_corefunctions.jl
-    └── JPEGsaver_function_temp.jl
+└── Release note/
 ```
 
-`temp7.3.jl` is the main stable GUI script.
-`temp9.jl` is the latest GUI script.
+temp9.jl loads only the files listed above from `Necessities/`. The other files in that folder (`gui_function_temp.jl`, `GUItype.jl`, `usv_detection_2.jl`, `usv_detection_corefunctions.jl`, `Stretcher.jl`) belong to older versions.
 
 ---
 
 ## Requirements
 
-The GUI is written in Julia and currently uses packages including:
+* Julia (developed and tested primarily on **Windows**)
+* Packages declared in `Project.toml`:
 
 ```text
-Gtk
-GtkObservables
-Graphics
-Colors
-Cairo
-CairoMakie
-JLD
-HDF5
-FFTW
-DSP
-LinearAlgebra
-Distributions
-Images
-ImageTransformations
-ImageMagick
-FileIO
-Interpolations
-SparseArrays
-Statistics
+Gtk  GtkObservables  Graphics  Colors  Cairo  CairoMakie
+JLD  HDF5  FFTW  DSP  Distributions  LinearAlgebra
+Images  ImageTransformations  ImageMagick  FileIO  Interpolations
 ```
 
-The current implementation is primarily developed and tested on Windows.
+The standard libraries `Dates`, `Printf`, `Random`, `SparseArrays` and `Statistics` are also used; they ship with Julia.
 
 ---
 
 ## Installation
 
-Clone the repository:
-
 ```bash
 git clone https://github.com/NeuroParkUSVregistrators/USV_registration_GUI.git
 cd USV_registration_GUI
+git checkout temp9
 ```
 
-Start Julia from the repository directory and activate the environment:
+Then, in Julia started from that directory:
 
 ```julia
 using Pkg
@@ -102,223 +78,219 @@ Pkg.activate(".")
 Pkg.instantiate()
 ```
 
-If a `Manifest.toml` is provided, `Pkg.instantiate()` will install the package versions used by the project.
-
 ---
 
-## Running the GUI
+## Running temp9.jl
 
-Run:
+**Start Julia in the repository folder.** temp9.jl calls `Pkg.activate(".")` itself and loads `usv.glade` and `Necessities/...` with relative paths, so it must be run with the repository as the working directory.
 
 ```julia
-include("temp7.3.jl")
+include("temp9.jl")
 ```
-or
+
+or from a terminal:
+
+```bash
+julia temp9.jl
+```
+
+> When running with `julia temp9.jl` from the command line, the script exits when it reaches the end. Running it with `include` from the REPL keeps the window open.
+
+A file dialog opens. Choose:
+
+| File | Use |
+| --- | --- |
+| `recording.h5` | Start a new registration |
+| `recording.jld` | Reopen a saved annotation (the matching `recording.h5` must sit in the same folder) |
+
+### Audio channel
+
+temp9 reads **analog channel 1** (`anl[1]`) of the WaveSurfer file by default; this channel is used for the spectrogram, detection and JPEG export. To use another channel, edit the last lines of `temp9.jl`:
+
 ```julia
-include("temp8.jl")
+choice = 1            # set to 2 for anl[2]
+# channel_select()    # or uncomment this line: choice = channel_select() to be asked at startup
+@time make_gui()
 ```
-
-The GUI will open a file-selection dialog.
-
-Select either:
-
-```text
-recording.h5
-```
-
-for a new registration, or
-
-```text
-recording.jld
-```
-
-to reopen a previously annotated recording.
-
-The corresponding `.h5` recording must be available when loading a `.jld` annotation.
 
 ---
 
 ## Basic Workflow
 
 ```text
-WaveSurfer recording (.h5)
-          │
-          ▼
-     Load in GUI
-          │
-          ▼
- Inspect spectrogram
-          │
-          ▼
- Draw / edit USV boxes
-          │
-          ▼
-        Save
-       /    \
-      ▼      ▼
-   .jld     JPEGs
+   WaveSurfer recording (.h5)
+              │
+              ▼
+          Load in GUI
+              │
+      ┌───────┴────────┐
+      ▼                ▼
+ USV detection    Draw boxes by hand
+      └───────┬────────┘
+              ▼
+   Review / move / resize / delete
+              │
+              ▼
+         Save (Ctrl+S)
+           /       \
+          ▼         ▼
+       .jld     <name>_jpegs/
 ```
 
-### 1. Load recording
+1. **Load** a recording (startup dialog or the **Load** button). Loading a new file resets the editor state.
+2. **Detect** — press **USV detection** to auto-annotate the whole recording, or skip this and annotate by hand.
+3. **Review** — step through boxes with `↑`/`↓`; the view jumps to each one and the side panel shows its close-up and features. Fix or delete boxes as needed.
+4. **Save** with the **Save** button or `Ctrl+S`.
 
-Open a WaveSurfer `.h5` file.
+---
 
-The GUI calculates the spectrogram and displays the recording.
+## Automatic USV Detection
 
-### 2. Register USVs
+Pressing **USV detection** runs, on the loaded channel:
 
-Draw bounding boxes around individual vocalizations.
+1. **SDTS filter** (`sdts_filter.jl`) — Short-Duration Transient Suppression. Smooths the spectrogram with time-elongated and diagonal Gaussians (to keep tonal and FM components) and subtracts a frequency-elongated Gaussian (to suppress short broadband clicks).
+2. **Denoising and time-axis detection** (`denoise_usv`, `usv_whole_2d`) — finds USV onsets/offsets.
+3. **Frequency bounds with harmonics** (`usv_detect_2d(...; harmonics=true, harm_kw=HARM_KW_MORE)`) — sets each box's lower/upper frequency from the ridge, extended to include weak harmonics found on an SNR spectrogram.
 
-### 3. Inspect annotations
+The console prints the number of detected USVs, and the boxes appear in the editor marked as unsaved.
 
-The selected USV is shown separately together with its acoustic features.
+> **Detection replaces all current boxes**, including any drawn by hand or loaded from a `.jld`. Run it before manual edits, or don't save if the result is not wanted.
 
-### 4. Save
+### Tuning
 
-Use the **Save** button or:
+Settings are globals that can be changed from the REPL (after `include("temp9.jl")`) before pressing the button:
 
-```text
-Ctrl + S
+```julia
+SDTS_ENABLED[] = true     # false = skip SDTS
+SDTS_ALPHA[]   = 0.5      # weight of the original spectrogram (1.0 = no filtering)
+SDTS_M[]       = 7        # kernel size in bins
+SDTS_A[]       = nothing  # Gaussian scale; nothing → SDTS_M/10
 ```
 
-The annotation is saved as:
-
-```text
-recording.jld
-```
-
-and individual USV images are exported automatically.
+Harmonic search parameters are in `HARM_KW_MORE` (`usv_detection_3.jl`); detection thresholds are keyword arguments of `usv_whole_2d` in the same file.
 
 ---
 
 ## Controls
 
-| Control            | Action                          |
-| ------------------ | ------------------------------- |
-| Left mouse drag    | Draw new USV                    |
-| Modified left drag | Move selected USV               |
-| Right mouse drag   | Resize selected USV             |
-| Mouse wheel        | Zoom time scale                 |
-| `←`                | Move backward through recording |
-| `→`                | Move forward through recording  |
-| `↑`                | Select next USV                 |
-| `↓`                | Select previous USV             |
-| `Ctrl + S`         | Save                            |
-| `Ctrl + Z`         | Delete selected USV             |
-| `Delete`           | Delete selected USV             |
-| `Backspace`        | Delete selected USV             |
+| Control | Action |
+| --- | --- |
+| Left drag | Draw a new USV box |
+| `Shift` + left drag (inside a box) | Move that box |
+| Right drag (inside a box) | Resize: moves the box's second corner |
+| Mouse wheel | Zoom time window (0.1–15 s), centered on the current view |
+| `←` / `→` | Scroll back / forward through the recording |
+| `↑` / `↓` | Select next / previous USV |
+| `Ctrl + S` | Save |
+| `Delete`, `Backspace`, `Ctrl + Z` | Delete the selected USV |
+
+Box colors: **orange** = selected, **blue** = other boxes, **red** = being drawn, **green** = being moved, **yellow** = being resized.
+
+The selected USV can also be chosen with the slider/spin button in the single-USV panel, and the time position with the slider/spin button under the spectrogram. The vertical sliders set the display intensity scale.
+
+> `Ctrl + Z` deletes the selected box; it is **not** undo.
 
 ---
 
-## File Status Indicator
+## Window Title
 
-The title bar shows the currently loaded filename.
-
-For example:
+The title shows the loaded file, with `*` while there are unsaved changes:
 
 ```text
-USV260801_001.h5
+USV260801_001.h5      ← saved
+USV260801_001.h5 *    ← unsaved changes
 ```
 
-When annotations have been changed since the last save:
-
-```text
-USV260801_001.h5 *
-```
-
-The `*` indicates unsaved changes.
-
-After saving, the `*` disappears.
+If a callback fails, the title changes to `ERROR: <action> - Check console` and the details are printed in the Julia console.
 
 ---
 
-## Annotation Files
+## Output Files
 
-Annotations are stored in JLD format.
+### Annotations (`.jld`)
 
-Example:
-
-```text
-USV260801_001.jld
-```
-
-The annotation file stores USV bounding-box coordinates separately from Gtk-specific GUI objects, allowing annotations to be loaded again in later sessions.
-
-The `.jld` filename corresponds to the original `.h5` recording:
+Saved next to the recording with the same name:
 
 ```text
 USV260801_001.h5
 USV260801_001.jld
 ```
 
----
+Boxes are sorted by time and stored as plain `USVBox(x1, y1, x2, y2)` records under the key `"liness"` (x in seconds, y as a 0–1 frequency ratio), with `"y_unit" = "ratio"`. No Gtk objects are stored, so the file can be read without the GUI:
 
-## JPEG Export
+```julia
+using JLD
+include("Necessities/GUItype_temp2.jl")   # needs XY/UserUnit from Graphics
+d = JLD.load("USV260801_001.jld")
+d["liness"]   # Vector{USVBox}
+```
 
-Saving also exports individual USV spectrograms.
+`.jld` files from earlier versions load in temp9; the y unit (ratio or frequency bin) is detected automatically.
 
-Default output directory:
+### JPEGs
+
+Every save also exports each USV as a grayscale JPEG:
 
 ```text
 USV260801_001_jpegs/
+  0001_12.3456-12.4012_lowcut.jpeg
+  0002_...
 ```
 
-Default image size:
+* Filename: `<index>_<start s>-<end s>_lowcut.jpeg`
+* Size: 128 × 128 (stretched, not padded)
+* Frequency range limited to **30–125 kHz** inside the box
+* Contrast: 2nd–98th percentile normalization
+* Taken from the same channel as the GUI (`choice`)
 
-```text
-128 × 128
-```
-
-The exported dataset can subsequently be used for image-based analyses such as dimensionality reduction, clustering, or neural-network models.
+These images are intended for image-based analyses such as dimensionality reduction, clustering, or neural-network models.
 
 ---
 
 ## Acoustic Measurements
 
-For each manually registered USV, the GUI calculates:
+For each box the GUI shows:
 
-| Measurement     | Description                                      |
-| --------------- | ------------------------------------------------ |
-| Duration        | Vocalization duration in ms                      |
-| Loudness        | Mean signal power expressed in dB                |
-| Spectral purity | Ratio describing concentration of spectral power |
-| Mean frequency  | Mean dominant frequency in kHz                   |
-| Pitch variance  | Variance of dominant frequency in log₁₀(Hz²)     |
+| Measurement | Unit |
+| --- | --- |
+| Duration | ms |
+| Loudness | dB |
+| Spectral purity | ratio |
+| Mean frequency | kHz |
+| Pitch variance | log₁₀(Hz²) |
 
-Distributions of these measurements are displayed as histograms in the GUI.
+The bottom panel shows the distribution of each measurement over all boxes in the file.
+
+In temp9, purity, mean frequency and pitch variance are computed on the **fundamental band** of a box when it contains harmonics, so harmonics do not skew them. To use the whole box as in earlier versions:
+
+```julia
+FEATURE_BAND[] = :box    # default :fundamental
+```
 
 ---
 
-## Current Version
+## What's New in temp9
 
-### Temp7.3
-
-Major changes:
-
-* Added current filename to window title
-* Added unsaved-change (`*`) indicator
-* Improved file switching and GUI reset behavior
-* Reorganized GUI state handling
-* Changed dependencies to repository-relative paths
-* Updated automatic JPEG export
-
-See `Temp7.3_ReleaseNote` for details.
+* **USV detection** button: SDTS denoising + 2-D detection + harmonic-aware frequency bounds
+* Frequency coordinates shared between manual and detected boxes (no ±1 bin offset when loading detected boxes; no hard-coded 257 bins)
+* Features computed on the fundamental band by default (`FEATURE_BAND`)
+* Old `.jld` files with y stored in frequency bins are now converted correctly when loaded
+* kHz frequency axis drawn on the spectrogram
+* Analog channel 1 selected by default, with `channel_select()` available
+* Clearer errors for unsupported file types or a missing `.h5` next to a `.jld`
 
 ---
 
 ## Notes
 
-The GUI currently assumes WaveSurfer-style HDF5 recordings and the acquisition structure expected by `wavesurfer.jl`.
-
-Recording format, sampling rate, and channel configuration should therefore be checked before applying the GUI to data acquired with a different setup.
+* The GUI assumes WaveSurfer HDF5 recordings in the structure read by `wavesurfer.jl`, sampled at **250 kHz** (STFT: 512-point Hann window, hop 128). Check sampling rate and channel layout before using data from a different setup.
+* Saving overwrites the existing `.jld`. JPEGs with the same name are overwritten, but images from boxes that were since deleted or moved stay in the folder; clear `<name>_jpegs/` first if you need an exact match to the `.jld`.
 
 ---
 
 ## Authors / Contributors
 
 NeuroPark USV Registrators
-
----
 
 ## Repository
 
