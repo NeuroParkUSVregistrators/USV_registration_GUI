@@ -3,7 +3,7 @@ NEWLY NAMED: "JWI-EAK"
 
 A Julia/Gtk graphical interface for **registering and inspecting mouse ultrasonic vocalizations (USVs)** in WaveSurfer `.h5` recordings.
 
-`temp9.jl` is the current version of the GUI. On top of manual box annotation, it adds a one-click **automatic USV detection** pipeline (SDTS denoising → time-axis detection → ridge/harmonic frequency bounds) whose results load straight into the editor for review and correction.
+`Jwi-eak.jl` is the current version of the GUI. On top of manual box annotation, it adds a one-click **automatic USV detection** pipeline (SDTS denoising → time-axis detection → ridge/harmonic frequency bounds) whose results load straight into the editor for review and correction.
 
 ## Features
 
@@ -21,12 +21,12 @@ A Julia/Gtk graphical interface for **registering and inspecting mouse ultrasoni
 
 ## Repository Structure
 
-> `temp9.jl` lives on the **`temp9`** branch.
+> `Jwi-eak.jl` lives on the **`temp9`** branch.
 
 ```text
 USV_registration_GUI/
 │
-├── temp9.jl                         ← current GUI (this README)
+├── Jwi-eak.jl                         ← current GUI (this README)
 ├── temp8.jl, temp7.3.jl, temp7.2.jl ← earlier versions
 ├── usv.glade                        ← Gtk layout (window, buttons, panels)
 ├── Project.toml / Manifest.toml     ← Julia environment
@@ -44,7 +44,7 @@ USV_registration_GUI/
 └── Release note/
 ```
 
-temp9.jl loads only the files listed above from `Necessities/`. The other files in that folder (`gui_function_temp.jl`, `GUItype.jl`, `usv_detection_2.jl`, `usv_detection_corefunctions.jl`, `Stretcher.jl`) belong to older versions.
+Jwi-eak.jl loads only the files listed above from `Necessities/`.
 
 ---
 
@@ -86,16 +86,16 @@ Pkg.instantiate()
 **Start Julia in the repository folder.** temp9.jl calls `Pkg.activate(".")` itself and loads `usv.glade` and `Necessities/...` with relative paths, so it must be run with the repository as the working directory.
 
 ```julia
-include("temp9.jl")
+include("Jwi-eak.jl")
 ```
 
 or from a terminal:
 
 ```bash
-julia temp9.jl
+julia Jwi-eak.jl
 ```
 
-> When running with `julia temp9.jl` from the command line, the script exits when it reaches the end. Running it with `include` from the REPL keeps the window open.
+> When running with `julia Jwi-eak.jl` from the command line, the script exits when it reaches the end. Running it with `include` from the REPL keeps the window open.
 
 A file dialog opens. Choose:
 
@@ -106,7 +106,7 @@ A file dialog opens. Choose:
 
 ### Audio channel
 
-temp9 reads **analog channel 1** (`anl[1]`) of the WaveSurfer file by default; this channel is used for the spectrogram, detection and JPEG export. To use another channel, edit the last lines of `temp9.jl`:
+temp9 reads **analog channel 1** (`anl[1]`) of the WaveSurfer file by default; this channel is used for the spectrogram, detection and JPEG export. To use another channel, edit the last lines of `Jwi-eak.jl`:
 
 ```julia
 choice = 1            # set to 2 for anl[2]
@@ -159,7 +159,7 @@ The console prints the number of detected USVs, and the boxes appear in the edit
 
 ### Tuning
 
-Settings are globals that can be changed from the REPL (after `include("temp9.jl")`) before pressing the button:
+Settings are globals that can be changed from the REPL (after `include("Jwi-eak.jl")`) before pressing the button:
 
 ```julia
 SDTS_ENABLED[] = true     # false = skip SDTS
